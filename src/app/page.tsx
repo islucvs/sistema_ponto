@@ -107,31 +107,41 @@ function SelectSeparator() {
     <div className='flex flex-row gap-4'>
       <Select>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select a fruit" />
+          <SelectValue placeholder="Mês" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Mês</SelectLabel>
+              <SelectItem value="janeiro">Janeiro</SelectItem>
+              <SelectItem value="fevereiro">Fevereiro</SelectItem>
+              <SelectItem value="março">Março</SelectItem>
+              <SelectItem value="abril">Abril</SelectItem>
+              <SelectItem value="maio">Maio</SelectItem>
+              <SelectItem value="junho">Junho</SelectItem>
+              <SelectItem value="julho">Julho</SelectItem>
+              <SelectItem value="agosto">Agosto</SelectItem>
+              <SelectItem value="setembro">Setembro</SelectItem>
+              <SelectItem value="outubro">Outubro</SelectItem>
+              <SelectItem value="novembro">Novembro</SelectItem>
+              <SelectItem value="dezembro">Dezembro</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
       <Select>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select a fruit" />
+          <SelectValue placeholder="Ano" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Fruits</SelectLabel>
-            <SelectItem value="apple">Apple</SelectItem>
-            <SelectItem value="banana">Banana</SelectItem>
-            <SelectItem value="blueberry">Blueberry</SelectItem>
-            <SelectItem value="grapes">Grapes</SelectItem>
-            <SelectItem value="pineapple">Pineapple</SelectItem>
+            <SelectLabel>Ano</SelectLabel>
+            <SelectItem value="2018">2018</SelectItem>
+            <SelectItem value="2019">2019</SelectItem>
+            <SelectItem value="2020">2020</SelectItem>
+            <SelectItem value="2021">2021</SelectItem>
+            <SelectItem value="2022">2022</SelectItem>
+            <SelectItem value="2023">2023</SelectItem>
+            <SelectItem value="2024">2024</SelectItem>
+            <SelectItem value="2025">2025</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
