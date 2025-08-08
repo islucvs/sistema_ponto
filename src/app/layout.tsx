@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resumo de ponto",
+  title: "Jaicós | Folha de ponto",
   description: "Resumo da folha de pontos de Jaicós",
 };
 

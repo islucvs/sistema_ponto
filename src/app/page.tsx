@@ -54,7 +54,7 @@ function TableDemo() {
             }, 0)
             setTotal(sum)
           },
-          error: (error) => {
+          error: (error:any) => {
             throw error
           }
         })
@@ -73,7 +73,6 @@ function TableDemo() {
 
   return (
     <Table>
-      <TableCaption>Listagem</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className="w-[100px]">CPF</TableHead>
@@ -88,16 +87,10 @@ function TableDemo() {
             <TableCell className="font-medium">{dados.CPF}</TableCell>
             <TableCell>{dados.Nome}</TableCell>
             <TableCell>{dados.Cargo}</TableCell>
-            <TableCell className="text-right">${dados.Lotação}</TableCell>
+            <TableCell className="text-right">{dados.Lotação}</TableCell>
           </TableRow>
         ))}
       </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className="text-right">${total.toFixed(2)}</TableCell>
-        </TableRow>
-      </TableFooter>
     </Table>
   )
 }
