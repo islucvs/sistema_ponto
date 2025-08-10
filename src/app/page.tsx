@@ -1,7 +1,18 @@
 'use client'
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useState, useEffect, useMemo } from 'react'
 import Papa from 'papaparse'
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -27,14 +38,15 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
   const [dados, setDados] = useState<Dados[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedRow, setSelectedRow] = useState<Dados | null>(null)
 
   const filteredData = useMemo(() => {
-  return dados.filter(item =>
-    item.Nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.Cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.CPF.includes(searchTerm)
-  )
-}, [dados, searchTerm])
+    return dados.filter(item =>
+      item.Nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.Cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.CPF.includes(searchTerm)
+    )
+  }, [dados, searchTerm])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,27 +83,103 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
   if (loading) return <div>Carregando dados</div>
   if (error) return <div className="text-red-500">Error: {error}</div>
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">CPF</TableHead>
-          <TableHead>Nome</TableHead>
-          <TableHead>Cargo</TableHead>
-          <TableHead className="text-right">Vinculo</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredData.map((item) => (
-          <TableRow key={item.CPF}>
-            <TableCell className="font-medium">{item.CPF}</TableCell>
-            <TableCell>{item.Nome}</TableCell>
-            <TableCell>{item.Cargo}</TableCell>
-            <TableCell className="text-right">{item.Lotação}</TableCell>
+return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">CPF</TableHead>
+            <TableHead>Nome</TableHead>
+            <TableHead>Cargo</TableHead>
+            <TableHead className="text-right">Vinculo</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {filteredData.map((item) => (
+            <TableRow key={item.CPF}>
+              <TableCell className="font-medium">{item.CPF}</TableCell>
+              <TableCell>{item.Nome}</TableCell>
+              <TableCell>{item.Cargo}</TableCell>
+              <TableCell className="text-right">{item.Lotação}</TableCell>
+              <TableCell className="text-right">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedRow(item)}
+                    >
+                      Ver Detalhes
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Detalhes do Registro</DialogTitle>
+                      <DialogDescription>
+                        Informações completas deste funcionário
+                      </DialogDescription>
+                    </DialogHeader>
+                    {selectedRow && (
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="cpf" className="text-right">
+                            CPF
+                          </Label>
+                          <Input 
+                            id="cpf" 
+                            defaultValue={selectedRow.CPF} 
+                            className="col-span-3" 
+                            readOnly
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="nome" className="text-right">
+                            Nome
+                          </Label>
+                          <Input 
+                            id="nome" 
+                            defaultValue={selectedRow.Nome} 
+                            className="col-span-3" 
+                            readOnly
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="cargo" className="text-right">
+                            Cargo
+                          </Label>
+                          <Input 
+                            id="cargo" 
+                            defaultValue={selectedRow.Cargo} 
+                            className="col-span-3" 
+                            readOnly
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="lotacao" className="text-right">
+                            Lotação
+                          </Label>
+                          <Input 
+                            id="lotacao" 
+                            defaultValue={selectedRow.Lotação} 
+                            className="col-span-3" 
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button">Fechar</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
   )
 }
 
@@ -141,7 +229,7 @@ function SelectSeparator({ onSearch }: { onSearch: (term: string) => void }) {
         </SelectContent>
       </Select>
       <Input 
-        placeholder="Nome..." 
+        placeholder="Pesquise por Nome, Cargo ou CPF" 
         className="w-[500px]" 
         value={searchTerm}
         onChange={(e) => {
@@ -149,9 +237,6 @@ function SelectSeparator({ onSearch }: { onSearch: (term: string) => void }) {
           onSearch(e.target.value)
         }}
       />
-      <div className="flex flex-wrap gap-2 md:flex-row">
-        <Button>Pesquisar</Button>
-      </div>
     </div>
   )
 }
