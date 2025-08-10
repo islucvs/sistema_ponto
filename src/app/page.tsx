@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Papa from 'papaparse'
 import {
   Select,
@@ -14,9 +14,7 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -25,11 +23,18 @@ import Dados from '@/types/dados'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-function TableDemo() {
+function TableDemo({ searchTerm }: { searchTerm: string }) {
   const [dados, setDados] = useState<Dados[]>([])
-  const [total, setTotal] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+
+  const filteredData = useMemo(() => {
+  return dados.filter(item =>
+    item.Nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.Cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.CPF.includes(searchTerm)
+  )
+}, [dados, searchTerm])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,13 +53,8 @@ function TableDemo() {
             }
             
             setDados(results.data)
-            
-            const sum = results.data.reduce((acc, row) => {
-              return acc + parseFloat(row.Amount || '0')
-            }, 0)
-            setTotal(sum)
           },
-          error: (error:any) => {
+          error: (error: unknown) => {
             throw error
           }
         })
@@ -78,16 +78,16 @@ function TableDemo() {
           <TableHead className="w-[100px]">CPF</TableHead>
           <TableHead>Nome</TableHead>
           <TableHead>Cargo</TableHead>
-          <TableHead className="text-right">Lotação</TableHead>
+          <TableHead className="text-right">Vinculo</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {dados.map((dados) => (
-          <TableRow key={dados.CPF}>
-            <TableCell className="font-medium">{dados.CPF}</TableCell>
-            <TableCell>{dados.Nome}</TableCell>
-            <TableCell>{dados.Cargo}</TableCell>
-            <TableCell className="text-right">{dados.Lotação}</TableCell>
+        {filteredData.map((item) => (
+          <TableRow key={item.CPF}>
+            <TableCell className="font-medium">{item.CPF}</TableCell>
+            <TableCell>{item.Nome}</TableCell>
+            <TableCell>{item.Cargo}</TableCell>
+            <TableCell className="text-right">{item.Lotação}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -95,7 +95,9 @@ function TableDemo() {
   )
 }
 
-function SelectSeparator() {
+function SelectSeparator({ onSearch }: { onSearch: (term: string) => void }) {
+  const [searchTerm, setSearchTerm] = useState('')
+
   return (
     <div className='flex flex-row gap-4'>
       <Select>
@@ -105,18 +107,18 @@ function SelectSeparator() {
         <SelectContent>
           <SelectGroup>
             <SelectLabel>Mês</SelectLabel>
-              <SelectItem value="janeiro">Janeiro</SelectItem>
-              <SelectItem value="fevereiro">Fevereiro</SelectItem>
-              <SelectItem value="março">Março</SelectItem>
-              <SelectItem value="abril">Abril</SelectItem>
-              <SelectItem value="maio">Maio</SelectItem>
-              <SelectItem value="junho">Junho</SelectItem>
-              <SelectItem value="julho">Julho</SelectItem>
-              <SelectItem value="agosto">Agosto</SelectItem>
-              <SelectItem value="setembro">Setembro</SelectItem>
-              <SelectItem value="outubro">Outubro</SelectItem>
-              <SelectItem value="novembro">Novembro</SelectItem>
-              <SelectItem value="dezembro">Dezembro</SelectItem>
+            <SelectItem value="janeiro">Janeiro</SelectItem>
+            <SelectItem value="fevereiro">Fevereiro</SelectItem>
+            <SelectItem value="março">Março</SelectItem>
+            <SelectItem value="abril">Abril</SelectItem>
+            <SelectItem value="maio">Maio</SelectItem>
+            <SelectItem value="junho">Junho</SelectItem>
+            <SelectItem value="julho">Julho</SelectItem>
+            <SelectItem value="agosto">Agosto</SelectItem>
+            <SelectItem value="setembro">Setembro</SelectItem>
+            <SelectItem value="outubro">Outubro</SelectItem>
+            <SelectItem value="novembro">Novembro</SelectItem>
+            <SelectItem value="dezembro">Dezembro</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -138,19 +140,29 @@ function SelectSeparator() {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Input placeholder="Nome..." className="w-[500px]" />
+      <Input 
+        placeholder="Nome..." 
+        className="w-[500px]" 
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value)
+          onSearch(e.target.value)
+        }}
+      />
       <div className="flex flex-wrap gap-2 md:flex-row">
-      <Button>Pesquisar</Button>
-    </div>
+        <Button>Pesquisar</Button>
+      </div>
     </div>
   )
 }
 
 export default function Page() {
+  const [searchTerm, setSearchTerm] = useState('')
+
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
-      <SelectSeparator />
-      <TableDemo />
+      <SelectSeparator onSearch={setSearchTerm} />
+      <TableDemo searchTerm={searchTerm} />
     </div>
   )
 }
