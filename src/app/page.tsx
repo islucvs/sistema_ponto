@@ -112,26 +112,15 @@ return (
                       Ver Detalhes
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
+                  <DialogContent className="sm:max-w-[1005px] h-[600px] overflow-y-auto gap-1">
+                    <DialogHeader className="h-100px">
                       <DialogTitle>Detalhes do Registro</DialogTitle>
                       <DialogDescription>
                         Informações completas deste funcionário
                       </DialogDescription>
                     </DialogHeader>
                     {selectedRow && (
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="cpf" className="text-right">
-                            CPF
-                          </Label>
-                          <Input 
-                            id="cpf" 
-                            defaultValue={selectedRow.CPF} 
-                            className="col-span-3" 
-                            readOnly
-                          />
-                        </div>
+                      <div className="grid gap-1 py-1">
                         <div className="grid grid-cols-4 items-center gap-4">
                           <Label htmlFor="nome" className="text-right">
                             Nome
@@ -164,6 +153,38 @@ return (
                             className="col-span-3" 
                             readOnly
                           />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="matricula" className="text-right">
+                            Matrícula
+                          </Label>
+                          <Input 
+                            id="matricula" 
+                            defaultValue={selectedRow.Matrícula} 
+                            className="col-span-3" 
+                            readOnly
+                          />
+                        </div>
+                        <div className="items-center gap-4 w-full">
+                          <Table className="bg-[#f3f3f3]">
+                            <TableHeader className="sticky top-0 bg-[#f3f3f3] z-10">
+                              <TableRow>
+                                <TableHead>Dia</TableHead>
+                                <TableHead>Pontos</TableHead>
+                                <TableHead>Carga Horária</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow key={item.CPF}>
+                                <TableCell className="font-medium">
+                                  { /*Array.from(Array(31).keys()).map(x => x + 1)*/ }
+                                </TableCell>
+                                <TableCell>{item.Entrada}</TableCell>
+                                <TableCell>{item.Saída}</TableCell>
+                                <TableCell>{item.CargaHoraria}</TableCell>                     
+                              </TableRow>
+                            </TableBody>
+                          </Table>
                         </div>
                       </div>
                     )}
