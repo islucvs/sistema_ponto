@@ -83,7 +83,26 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
   if (loading) return <div>Carregando dados</div>
   if (error) return <div className="text-red-500">Error: {error}</div>
 
-return (
+  // Function to generate day rows
+  const renderDayRows = (employee: Dados) => {
+    const days = [];
+    for (let day = 1; day <= 31; day++) {
+      const entradaKey = `Dia${day}_Entrada`;
+      const saidaKey = `Dia${day}_Saida`;
+      
+      days.push(
+        <TableRow key={`${employee.CPF}-${day}`}>
+          <TableCell>{day}</TableCell>
+          <TableCell>{employee[entradaKey] || '-'}</TableCell>
+          <TableCell>{employee[saidaKey] || '-'}</TableCell>
+          <TableCell>{employee.CargaHoraria || '-'}</TableCell>
+        </TableRow>
+      );
+    }
+    return days;
+  };
+
+  return (
     <>
       <Table>
         <TableHeader>
@@ -170,19 +189,13 @@ return (
                             <TableHeader className="sticky top-0 bg-[#f3f3f3] z-10">
                               <TableRow>
                                 <TableHead>Dia</TableHead>
-                                <TableHead>Pontos</TableHead>
+                                <TableHead>Entrada</TableHead>
+                                <TableHead>Saída</TableHead>
                                 <TableHead>Carga Horária</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              <TableRow key={item.CPF}>
-                                <TableCell className="font-medium">
-                                  { /*Array.from(Array(31).keys()).map(x => x + 1)*/ }
-                                </TableCell>
-                                <TableCell>{item.Entrada}</TableCell>
-                                <TableCell>{item.Saída}</TableCell>
-                                <TableCell>{item.CargaHoraria}</TableCell>                     
-                              </TableRow>
+                              {renderDayRows(selectedRow)}
                             </TableBody>
                           </Table>
                         </div>
