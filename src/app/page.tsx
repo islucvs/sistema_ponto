@@ -125,8 +125,8 @@ const TableDemo: React.FC<{
             <TableHead className="w-[100px]">CPF</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Cargo</TableHead>
-            <TableHead className="text-right">Vinculo</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+            <TableHead className="text-left">Vinculo</TableHead>
+            <TableHead className="text-left">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -135,11 +135,11 @@ const TableDemo: React.FC<{
               <TableCell className="font-medium">{item.CPF}</TableCell>
               <TableCell>{item.Nome}</TableCell>
               <TableCell>{item.Cargo}</TableCell>
-              <TableCell className="text-right">{item.Lotação}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-left">{item.Lotação}</TableCell>
+              <TableCell className="text-left">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button 
+                    <Button className="border-amber-50"
                       variant="outline" 
                       onClick={() => setSelectedRow(item)}
                     >
