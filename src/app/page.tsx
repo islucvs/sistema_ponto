@@ -60,7 +60,7 @@ const TableDemo: React.FC<{
         const filename = `/data/dados_${month}_${year}.csv`;
         const response = await fetch(filename);
         
-        if (!response.ok) throw new Error(`Referencia não calculada, atualize o arquivo ${filename}`);
+        if (!response.ok) throw new Error(`Referencia não calculada, atualize o arquivo de dados`);
         
         const csvData = await response.text();
         
