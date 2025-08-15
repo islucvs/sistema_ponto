@@ -36,6 +36,11 @@ import Dados from '@/types/dados'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+const months = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+];
+
 const TableDemo: React.FC<{ 
   searchTerm: string;
   month: string;
@@ -235,80 +240,115 @@ const TableDemo: React.FC<{
 function SelectSeparator({ 
   onSearch, 
   onMonthChange,
-  onYearChange
+  onYearChange,
+  initialMonth,
+  initialYear
 }: { 
-  onSearch: (term: string) => void
-  onMonthChange: (month: string) => void
-  onYearChange: (year: string) => void
+  onSearch: (term: string) => void;
+  onMonthChange: (month: string) => void;
+  onYearChange: (year: string) => void;
+  initialMonth: string;
+  initialYear: string;
 }) {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedYear, setSelectedYear] = useState(initialYear);
+  
+  // Get current date INSIDE the component
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  
+  // Generate year range (current year -5 to +4)
+  const years = Array.from({length: 10}, (_, i) => currentYear - 5 + i);
+
+  // Handle month change
+  const handleMonthChange = (value: string) => {
+    setSelectedMonth(value);
+    onMonthChange(value);
+  };
+
+  // Handle year change
+  const handleYearChange = (value: string) => {
+    setSelectedYear(value);
+    onYearChange(value);
+  };
 
   return (
-  <div className='flex flex-row gap-4'>
-    <Select onValueChange={onMonthChange}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Selecione o mês" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Meses</SelectLabel>
-          <SelectItem value="janeiro">Janeiro</SelectItem>
-          <SelectItem value="fevereiro">Fevereiro</SelectItem>
-          <SelectItem value="março">Março</SelectItem>
-          <SelectItem value="abril">Abril</SelectItem>
-          <SelectItem value="maio">Maio</SelectItem>
-          <SelectItem value="junho">Junho</SelectItem>
-          <SelectItem value="julho">Julho</SelectItem>
-          <SelectItem value="agosto">Agosto</SelectItem>
-          <SelectItem value="setembro">Setembro</SelectItem>
-          <SelectItem value="outubro">Outubro</SelectItem>
-          <SelectItem value="novembro">Novembro</SelectItem>
-          <SelectItem value="dezembro">Dezembro</SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <div className='flex flex-row gap-4'>
+      <Select value={selectedMonth} onValueChange={handleMonthChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Mês" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Mês</SelectLabel>
+            {months.map((month) => (
+              <SelectItem key={month} value={month}>
+                {month.charAt(0).toUpperCase() + month.slice(1)}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
 
-    <Select onValueChange={onYearChange}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Selecione o ano" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Anos</SelectLabel>
-          <SelectItem value="2023">2023</SelectItem>
-          <SelectItem value="2024">2024</SelectItem>
-          <SelectItem value="2025">2025</SelectItem>
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+      <Select value={selectedYear} onValueChange={handleYearChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Ano" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Ano</SelectLabel>
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
 
-    <Input 
-      placeholder="Pesquise por Nome, Cargo ou CPF" 
-      className="w-[500px]" 
-      value={searchTerm}
-      onChange={(e) => {
-        setSearchTerm(e.target.value)
-        onSearch(e.target.value)
-      }}
-    />
-  </div>
-)
+      <Input 
+        placeholder="Pesquise por Nome, Cargo ou CPF" 
+        className="w-[500px]" 
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          onSearch(e.target.value);
+        }}
+      />
+    </div>
+  );
 }
 
 export default function Page() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [month, setMonth] = useState('')
-  const [year, setYear] = useState('')
+  // Get current date
+  const now = new Date();
+  
+  // Format current month (0-indexed) to match your values
+  const currentMonth = months[now.getMonth()];
+  
+  // Format current year as string
+  const currentYear = now.getFullYear().toString();
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [month, setMonth] = useState(currentMonth);
+  const [year, setYear] = useState(currentYear);
 
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
+      <div className="justify-center flex h-[200px] bg-center bg-[#5200ff] bg-[url(/images/jaicos.jpeg)]">
+        <p>Resumo de ponto</p>
+        <img src="/images/logo_jaicos.jpg" className='z-1 h-[75px] rounded-b-2xl p-1 bg-amber-300' />
+      </div>
       <SelectSeparator 
         onSearch={setSearchTerm}
         onMonthChange={setMonth}
         onYearChange={setYear}
+        initialMonth={currentMonth}  // Pass initial values
+        initialYear={currentYear}
       />
       <TableDemo 
-        searchTerm={searchTerm}
+        searchTerm={searchTerm} 
         month={month}
         year={year}
       />
