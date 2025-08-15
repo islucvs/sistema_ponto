@@ -60,7 +60,7 @@ const TableDemo: React.FC<{
         const filename = `/data/dados_${month}_${year}.csv`;
         const response = await fetch(filename);
         
-        if (!response.ok) throw new Error(`Falha ao mostrar a referencia, contate o administrador do sistema.`);
+        if (!response.ok) throw new Error(`Referencia não calculada, atualize o arquivo ${filename}`);
         
         const csvData = await response.text();
         
@@ -338,7 +338,7 @@ export default function Page() {
     <div className="space-y-8 pt-10 pl-10 pr-10">
       <div className="justify-center flex h-[200px] bg-center bg-[#5200ff] bg-[url(/images/jaicos.jpeg)]">
         <p>Resumo de ponto</p>
-        <img src="/images/logo_jaicos.jpg" className='z-1 h-[75px] rounded-b-2xl p-1 bg-amber-300' />
+        <img src="/images/logo_jaicos.jpg" className='z-1 h-[75px] rounded-b-2xl p-1 pointer-events-none bg-amber-300' />
       </div>
       <SelectSeparator 
         onSearch={setSearchTerm}
