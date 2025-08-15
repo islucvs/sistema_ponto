@@ -11,12 +11,12 @@ function calculateWorkingHours(entrada: string, saida: string): string {
     const [entradaHours, entradaMinutes] = entrada.split(':').map(Number);
     const [saidaHours, saidaMinutes] = saida.split(':').map(Number);
     
-    const entradaTotal = entradaHours * 60 + entradaMinutes;
-    const saidaTotal = saidaHours * 60 + saidaMinutes;
+    const totalEntrada = entradaHours * 60 + entradaMinutes;
+    const totalSaida = saidaHours * 60 + saidaMinutes;
     
-    if (saidaTotal < entradaTotal) return '-'; // Invalid time range
+    if (totalSaida <= totalEntrada) return '-';
     
-    const diffMinutes = saidaTotal - entradaTotal;
+    const diffMinutes = totalSaida - totalEntrada;
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     
@@ -105,7 +105,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-[11px] p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}

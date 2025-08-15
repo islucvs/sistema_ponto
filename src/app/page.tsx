@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import {
   Dialog,
   DialogClose,
@@ -34,54 +36,67 @@ import Dados from '@/types/dados'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-function TableDemo({ searchTerm }: { searchTerm: string }) {
-  const [dados, setDados] = useState<Dados[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedRow, setSelectedRow] = useState<Dados | null>(null)
-
-  const filteredData = useMemo(() => {
-    return dados.filter(item =>
-      item.Nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.Cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.CPF.includes(searchTerm)
-    )
-  }, [dados, searchTerm])
+const TableDemo: React.FC<{ 
+  searchTerm: string;
+  month: string;
+  year: string;
+}> = ({ searchTerm, month, year }) => {
+  const [dados, setDados] = useState<Dados[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<Dados | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/data/dados.csv')
-        if (!response.ok) throw new Error('Failed to fetch CSV')
+        setLoading(true);
+        setError(null);
+
+        const filename = `/data/dados_${month}_${year}.csv`;
+        const response = await fetch(filename);
         
-        const csvData = await response.text()
+        if (!response.ok) throw new Error(`Falha ao mostrar a referencia, contate o administrador do sistema.`);
+        
+        const csvData = await response.text();
         
         Papa.parse<Dados>(csvData, {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
             if (results.errors.length > 0) {
-              throw new Error(results.errors[0].message)
+              throw new Error(results.errors[0].message);
             }
-            
-            setDados(results.data)
+            setDados(results.data);
           },
           error: (error: unknown) => {
-            throw error
+            throw error;
           }
-        })
+        });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
+    };
+
+    if (month && year) {
+      fetchData();
+    } else {
+      setLoading(false);
+      setDados([]);
     }
+  }, [month, year]);
 
-    fetchData()
-  }, [])
+  const filteredData = useMemo(() => {
+    return dados.filter(item =>
+      item.Nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.Cargo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.CPF?.includes(searchTerm)
+    )
+  }, [dados, searchTerm]);
 
-  if (loading) return <div>Carregando dados</div>
-  if (error) return <div className="text-red-500">Error: {error}</div>
+  if (loading) return <div>Carregando dados...</div>;
+  if (error) return <div className="text-red-500">Error: {error}</div>;
 
   // Function to generate day rows
   const renderDayRows = (employee: Dados) => {
@@ -91,7 +106,7 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
       const saidaKey = `Dia${day}_Saida`;
       
       days.push(
-        <TableRow key={`${employee.ID}-${day}`}>
+        <TableRow className='text-[2px]' key={`${employee.ID}-${day}`}>
           <TableCell>{day}</TableCell>
           <TableCell>{employee[entradaKey] || '-'}</TableCell>
           <TableCell>{employee[saidaKey] || '-'}</TableCell>
@@ -217,71 +232,86 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
   )
 }
 
-function SelectSeparator({ onSearch }: { onSearch: (term: string) => void }) {
+function SelectSeparator({ 
+  onSearch, 
+  onMonthChange,
+  onYearChange
+}: { 
+  onSearch: (term: string) => void
+  onMonthChange: (month: string) => void
+  onYearChange: (year: string) => void
+}) {
   const [searchTerm, setSearchTerm] = useState('')
 
   return (
-    <div className='flex flex-row gap-4'>
-      <Select>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Mês" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Mês</SelectLabel>
-            <SelectItem value="janeiro">Janeiro</SelectItem>
-            <SelectItem value="fevereiro">Fevereiro</SelectItem>
-            <SelectItem value="março">Março</SelectItem>
-            <SelectItem value="abril">Abril</SelectItem>
-            <SelectItem value="maio">Maio</SelectItem>
-            <SelectItem value="junho">Junho</SelectItem>
-            <SelectItem value="julho">Julho</SelectItem>
-            <SelectItem value="agosto">Agosto</SelectItem>
-            <SelectItem value="setembro">Setembro</SelectItem>
-            <SelectItem value="outubro">Outubro</SelectItem>
-            <SelectItem value="novembro">Novembro</SelectItem>
-            <SelectItem value="dezembro">Dezembro</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Select>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Ano" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Ano</SelectLabel>
-            <SelectItem value="2018">2018</SelectItem>
-            <SelectItem value="2019">2019</SelectItem>
-            <SelectItem value="2020">2020</SelectItem>
-            <SelectItem value="2021">2021</SelectItem>
-            <SelectItem value="2022">2022</SelectItem>
-            <SelectItem value="2023">2023</SelectItem>
-            <SelectItem value="2024">2024</SelectItem>
-            <SelectItem value="2025">2025</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Input 
-        placeholder="Pesquise por Nome, Cargo ou CPF" 
-        className="w-[500px]" 
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value)
-          onSearch(e.target.value)
-        }}
-      />
-    </div>
-  )
+  <div className='flex flex-row gap-4'>
+    <Select onValueChange={onMonthChange}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Selecione o mês" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Meses</SelectLabel>
+          <SelectItem value="janeiro">Janeiro</SelectItem>
+          <SelectItem value="fevereiro">Fevereiro</SelectItem>
+          <SelectItem value="março">Março</SelectItem>
+          <SelectItem value="abril">Abril</SelectItem>
+          <SelectItem value="maio">Maio</SelectItem>
+          <SelectItem value="junho">Junho</SelectItem>
+          <SelectItem value="julho">Julho</SelectItem>
+          <SelectItem value="agosto">Agosto</SelectItem>
+          <SelectItem value="setembro">Setembro</SelectItem>
+          <SelectItem value="outubro">Outubro</SelectItem>
+          <SelectItem value="novembro">Novembro</SelectItem>
+          <SelectItem value="dezembro">Dezembro</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+
+    <Select onValueChange={onYearChange}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Selecione o ano" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Anos</SelectLabel>
+          <SelectItem value="2023">2023</SelectItem>
+          <SelectItem value="2024">2024</SelectItem>
+          <SelectItem value="2025">2025</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+
+    <Input 
+      placeholder="Pesquise por Nome, Cargo ou CPF" 
+      className="w-[500px]" 
+      value={searchTerm}
+      onChange={(e) => {
+        setSearchTerm(e.target.value)
+        onSearch(e.target.value)
+      }}
+    />
+  </div>
+)
 }
 
 export default function Page() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [month, setMonth] = useState('')
+  const [year, setYear] = useState('')
 
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
-      <SelectSeparator onSearch={setSearchTerm} />
-      <TableDemo searchTerm={searchTerm} />
+      <SelectSeparator 
+        onSearch={setSearchTerm}
+        onMonthChange={setMonth}
+        onYearChange={setYear}
+      />
+      <TableDemo 
+        searchTerm={searchTerm}
+        month={month}
+        year={year}
+      />
     </div>
   )
 }
