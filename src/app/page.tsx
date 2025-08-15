@@ -91,7 +91,7 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
       const saidaKey = `Dia${day}_Saida`;
       
       days.push(
-        <TableRow key={`${employee.CPF}-${day}`}>
+        <TableRow key={`${employee.ID}-${day}`}>
           <TableCell>{day}</TableCell>
           <TableCell>{employee[entradaKey] || '-'}</TableCell>
           <TableCell>{employee[saidaKey] || '-'}</TableCell>
@@ -116,7 +116,7 @@ function TableDemo({ searchTerm }: { searchTerm: string }) {
         </TableHeader>
         <TableBody>
           {filteredData.map((item) => (
-            <TableRow key={item.CPF}>
+            <TableRow key={item.ID}>
               <TableCell className="font-medium">{item.CPF}</TableCell>
               <TableCell>{item.Nome}</TableCell>
               <TableCell>{item.Cargo}</TableCell>

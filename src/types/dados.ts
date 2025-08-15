@@ -1,4 +1,5 @@
 export interface Dados {
+  ID: string;
   CPF: string;
   Matrícula: string;
   Nome: string;
