@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import autoTable, { UserOptions } from 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import Papa from 'papaparse';
 
 interface WorkerData {
@@ -9,20 +9,6 @@ interface WorkerData {
   Lotação: string;
   Matrícula: string;
   [key: string]: string; // For dynamic day fields
-}
-
-interface ExportWorkerDetails {
-  CPF: string;
-  Nome: string;
-  Cargo: string;
-  Lotação: string;
-  Matrícula: string;
-  Dias: Array<{
-    dia: number;
-    entrada: string;
-    saida: string;
-    cargaHoraria: string;
-  }>;
 }
 
 export const exportAllWorkerDetailsToPDF = async (
@@ -53,7 +39,7 @@ export const exportAllWorkerDetailsToPDF = async (
             resolve(results.data);
           }
         },
-        error: (error:any) => {
+        error: (error: any) => {
           reject(error);
         }
       });
@@ -67,7 +53,6 @@ export const exportAllWorkerDetailsToPDF = async (
 
     // Process each worker
     for (const [index, worker] of workersData.entries()) {
-      // Add new page if needed (except for first worker)
       if (index > 0 && currentY > pageHeight - 100) {
         doc.addPage();
         currentY = 15;

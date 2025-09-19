@@ -319,10 +319,10 @@ function SelectSeparator({
       
       <Button 
         onClick={onExportDetails} 
-        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+        className="flex items-center gap-2 bg-[#05041d] hover:bg-[#312f69] cursor-pointer"
       >
         <Download size={16} />
-        Exportar PDF
+        Exportar PDF Geral
       </Button>
     </div>
   );
@@ -336,7 +336,6 @@ export default function Page() {
   const [searchTerm, setSearchTerm] = useState('');
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
-  const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
     if (!month || !year) {
@@ -344,7 +343,7 @@ export default function Page() {
       return;
     }
 
-    setIsExporting(true);
+    // If you want to add a loading state later, you can add it here
     try {
       await exportAllWorkerDetailsToPDF(
         month, 
@@ -355,21 +354,18 @@ export default function Page() {
     } catch (error) {
       console.error('Erro na exportação:', error);
       toast.error('Erro ao exportar PDF. Verifique se o arquivo existe.');
-    } finally {
-      setIsExporting(false);
     }
   };
 
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
-      <div className="justify-center flex h-[200px] bg-center bg-[#5200ff] bg-[url(/images/jaicos.jpeg)]">
-        <p>Resumo de ponto</p>
+      <div className="justify-center flex h-[200px] bg-center bg-transparent bg-[url(/images/jaicos.jpeg)]">
         <Image 
           src="/images/logo_jaicos.jpg" 
           alt="Logo Jaicós" 
           width={75}
           height={75}
-          className='z-1 rounded-b-2xl p-1 pointer-events-none bg-amber-300' 
+          className='z-1 h-[70px] w-[150px] rounded-b-2xl p-2 border-5 border-amber-300 bg-white pointer-events-none' 
         />
       </div>
       <SelectSeparator 

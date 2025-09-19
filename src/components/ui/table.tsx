@@ -4,28 +4,6 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function calculateWorkingHours(entrada: string, saida: string): string {
-  if (!entrada || !saida || entrada === '-' || saida === '-') return '-';
-  
-  try {
-    const [entradaHours, entradaMinutes] = entrada.split(':').map(Number);
-    const [saidaHours, saidaMinutes] = saida.split(':').map(Number);
-    
-    const totalEntrada = entradaHours * 60 + entradaMinutes;
-    const totalSaida = saidaHours * 60 + saidaMinutes;
-    
-    if (totalSaida <= totalEntrada) return '-';
-    
-    const diffMinutes = totalSaida - totalEntrada;
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
-    
-    return `${hours}h${minutes.toString().padStart(2, '0')}m`;
-  } catch {
-    return '-';
-  }
-}
-
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
