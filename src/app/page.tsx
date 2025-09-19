@@ -34,9 +34,10 @@ import {
 import Dados from '@/types/dados'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { exportAllWorkerDetailsToPDF } from '@/lib/pdfExport' // Updated import
+import { exportAllWorkerDetailsToPDF } from '@/lib/pdfExport'
 import { Download } from 'lucide-react'
-import { toast } from 'sonner' // Optional: for notifications
+import { toast } from 'sonner'
+import Image from 'next/image' // Add this import
 
 const months = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -47,7 +48,7 @@ const TableDemo: React.FC<{
   searchTerm: string;
   month: string;
   year: string;
-}> = ({ searchTerm, month, year }) => { // Add filteredData prop
+}> = ({ searchTerm, month, year }) => {
   const [dados, setDados] = useState<Dados[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +106,6 @@ const TableDemo: React.FC<{
   if (loading) return <div>Carregando dados...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
-  // ... rest of your TableDemo component remains exactly the same ...
-  // Function to generate day rows, return statement, etc.
   const renderDayRows = (employee: Dados) => {
     const days = [];
     for (let day = 1; day <= 31; day++) {
@@ -246,35 +245,29 @@ function SelectSeparator({
   onYearChange,
   initialMonth,
   initialYear,
-  onExportPDF,
-  onExportDetails // Add this new prop
+  onExportDetails // Remove onExportPDF since it's not used
 }: { 
   onSearch: (term: string) => void;
   onMonthChange: (month: string) => void;
   onYearChange: (year: string) => void;
   initialMonth: string;
   initialYear: string;
-  onExportPDF: () => void;
-  onExportDetails: () => void; // New prop for detailed export
+  onExportDetails: () => void;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(initialMonth);
   const [selectedYear, setSelectedYear] = useState(initialYear);
   
-  // Get current date INSIDE the component
   const now = new Date();
   const currentYear = now.getFullYear();
   
-  // Generate year range (current year -5 to +4)
   const years = Array.from({length: 10}, (_, i) => currentYear - 5 + i);
 
-  // Handle month change
   const handleMonthChange = (value: string) => {
     setSelectedMonth(value);
     onMonthChange(value);
   };
 
-  // Handle year change
   const handleYearChange = (value: string) => {
     setSelectedYear(value);
     onYearChange(value);
@@ -324,7 +317,6 @@ function SelectSeparator({
         }}
       />
       
-      {/* Add Export PDF Button */}
       <Button 
         onClick={onExportDetails} 
         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
@@ -337,22 +329,15 @@ function SelectSeparator({
 }
 
 export default function Page() {
-  // Get current date
   const now = new Date();
-  
-  // Format current month (0-indexed) to match your values
   const currentMonth = months[now.getMonth()];
-  
-  // Format current year as string
   const currentYear = now.getFullYear().toString();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
-  const [filteredData, setFilteredData] = useState<Dados[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Handle PDF export - NOW FILTERS DIRECTLY FROM CSV
   const handleExportPDF = async () => {
     if (!month || !year) {
       toast.error('Selecione mês e ano para exportar');
@@ -375,20 +360,17 @@ export default function Page() {
     }
   };
 
-  // Calculate filtered data for display (keeps your table working)
-  const filteredDataMemo = useMemo(() => {
-    return filteredData.filter(item =>
-      item.Nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.Cargo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.CPF?.includes(searchTerm)
-    )
-  }, [filteredData, searchTerm]);
-
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
       <div className="justify-center flex h-[200px] bg-center bg-[#5200ff] bg-[url(/images/jaicos.jpeg)]">
         <p>Resumo de ponto</p>
-        <img src="/images/logo_jaicos.jpg" className='z-1 h-[75px] rounded-b-2xl p-1 pointer-events-none bg-amber-300' />
+        <Image 
+          src="/images/logo_jaicos.jpg" 
+          alt="Logo Jaicós" 
+          width={75}
+          height={75}
+          className='z-1 rounded-b-2xl p-1 pointer-events-none bg-amber-300' 
+        />
       </div>
       <SelectSeparator 
         onSearch={setSearchTerm}
@@ -396,7 +378,6 @@ export default function Page() {
         onYearChange={setYear}
         initialMonth={currentMonth}
         initialYear={currentYear}
-        onExportPDF={handleExportPDF}
         onExportDetails={handleExportPDF}
       />
       <TableDemo 
