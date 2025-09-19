@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-
 import {
   Dialog,
   DialogClose,
@@ -35,6 +34,9 @@ import {
 import Dados from '@/types/dados'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { exportAllWorkerDetailsToPDF } from '@/lib/pdfExport' // Updated import
+import { Download } from 'lucide-react'
+import { toast } from 'sonner' // Optional: for notifications
 
 const months = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -45,7 +47,7 @@ const TableDemo: React.FC<{
   searchTerm: string;
   month: string;
   year: string;
-}> = ({ searchTerm, month, year }) => {
+}> = ({ searchTerm, month, year }) => { // Add filteredData prop
   const [dados, setDados] = useState<Dados[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +105,8 @@ const TableDemo: React.FC<{
   if (loading) return <div>Carregando dados...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
-  // Function to generate day rows
+  // ... rest of your TableDemo component remains exactly the same ...
+  // Function to generate day rows, return statement, etc.
   const renderDayRows = (employee: Dados) => {
     const days = [];
     for (let day = 1; day <= 31; day++) {
@@ -242,13 +245,17 @@ function SelectSeparator({
   onMonthChange,
   onYearChange,
   initialMonth,
-  initialYear
+  initialYear,
+  onExportPDF,
+  onExportDetails // Add this new prop
 }: { 
   onSearch: (term: string) => void;
   onMonthChange: (month: string) => void;
   onYearChange: (year: string) => void;
   initialMonth: string;
   initialYear: string;
+  onExportPDF: () => void;
+  onExportDetails: () => void; // New prop for detailed export
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(initialMonth);
@@ -274,7 +281,7 @@ function SelectSeparator({
   };
 
   return (
-    <div className='flex flex-row gap-4'>
+    <div className='flex flex-row gap-4 items-center'>
       <Select value={selectedMonth} onValueChange={handleMonthChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Mês" />
@@ -316,6 +323,15 @@ function SelectSeparator({
           onSearch(e.target.value);
         }}
       />
+      
+      {/* Add Export PDF Button */}
+      <Button 
+        onClick={onExportDetails} 
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+      >
+        <Download size={16} />
+        Exportar PDF
+      </Button>
     </div>
   );
 }
@@ -333,6 +349,40 @@ export default function Page() {
   const [searchTerm, setSearchTerm] = useState('');
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
+  const [filteredData, setFilteredData] = useState<Dados[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Handle PDF export - NOW FILTERS DIRECTLY FROM CSV
+  const handleExportPDF = async () => {
+    if (!month || !year) {
+      toast.error('Selecione mês e ano para exportar');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      await exportAllWorkerDetailsToPDF(
+        month, 
+        year, 
+        `registros-ponto-${month}-${year}.pdf`
+      );
+      toast.success('PDF exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro na exportação:', error);
+      toast.error('Erro ao exportar PDF. Verifique se o arquivo existe.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Calculate filtered data for display (keeps your table working)
+  const filteredDataMemo = useMemo(() => {
+    return filteredData.filter(item =>
+      item.Nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.Cargo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.CPF?.includes(searchTerm)
+    )
+  }, [filteredData, searchTerm]);
 
   return (
     <div className="space-y-8 pt-10 pl-10 pr-10">
@@ -344,8 +394,10 @@ export default function Page() {
         onSearch={setSearchTerm}
         onMonthChange={setMonth}
         onYearChange={setYear}
-        initialMonth={currentMonth}  // Pass initial values
+        initialMonth={currentMonth}
         initialYear={currentYear}
+        onExportPDF={handleExportPDF}
+        onExportDetails={handleExportPDF}
       />
       <TableDemo 
         searchTerm={searchTerm} 
