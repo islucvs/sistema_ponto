@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { AlignCenter } from 'lucide-react';
 import Papa from 'papaparse';
 
 interface WorkerData {
@@ -8,26 +9,26 @@ interface WorkerData {
   Cargo: string;
   Lotação: string;
   Matrícula: string;
-  [key: string]: string; // For dynamic day fields
+  CargaHoraria?: string;
+  [key: string]: string | undefined; // for dynamic fields
 }
 
 export const exportAllWorkerDetailsToPDF = async (
-  month: string, 
-  year: string, 
+  month: string,
+  year: string,
   fileName: string = 'detalhes-funcionarios.pdf'
 ) => {
   try {
-    // Fetch the specific CSV file based on month and year
     const filename = `/data/dados_${month}_${year}.csv`;
     const response = await fetch(filename);
-    
+
     if (!response.ok) {
       throw new Error(`Arquivo não encontrado para ${month}/${year}`);
     }
-    
+
     const csvData = await response.text();
-    
-    // Parse the CSV data
+
+    // Parse CSV into array of workers
     const workersData = await new Promise<WorkerData[]>((resolve, reject) => {
       Papa.parse<WorkerData>(csvData, {
         header: true,
@@ -39,112 +40,145 @@ export const exportAllWorkerDetailsToPDF = async (
             resolve(results.data);
           }
         },
-        error: (error: any) => {
-          reject(error);
-        }
+        error: (error: any) => reject(error),
       });
     });
 
-    // Create PDF
     const doc = new jsPDF();
-    let currentY = 15;
-    const pageHeight = doc.internal.pageSize.height;
     const margin = 15;
 
-    // Process each worker
-    for (const [index, worker] of workersData.entries()) {
-      if (index > 0 && currentY > pageHeight - 100) {
-        doc.addPage();
-        currentY = 15;
-      }
+    workersData.forEach((worker, index) => {
+      if (index > 0) doc.addPage(); // 👉 always start each worker on a fresh page
 
-      // Worker header
-      doc.setFontSize(16);
-      doc.setTextColor(40, 40, 40);
-      doc.text(`Detalhes do Funcionário`, margin, currentY);
-      currentY += 10;
+      let currentY = margin;
 
-      // Worker basic info
+      // Header (fixed institution info)
       doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Nome: ${worker.Nome || ''}`, margin, currentY);
-      currentY += 6;
-      doc.text(`Cargo: ${worker.Cargo || ''}`, margin, currentY);
-      currentY += 6;
-      doc.text(`Lotação: ${worker.Lotação || ''}`, margin, currentY);
-      currentY += 6;
-      doc.text(`Matrícula: ${worker.Matrícula || ''}`, margin, currentY);
-      currentY += 6;
-      doc.text(`CPF: ${worker.CPF || ''}`, margin, currentY);
-      currentY += 10;
+      doc.setFont("helvetica", "bold");
+      doc.text(`PREFEITURA MUNICIPAL DE JAICÓS`, margin, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.text(`CNPJ: 06.553.762/0001-00`, margin, currentY + 5);
+      doc.text(
+        `Endereço: Praca Ângelo Borges Leal Jaicós, s/n - Bairro: Serranópolis - CEP: 64575-000 - JAICÓS/PI`,
+        margin,
+        currentY + 10
+      );
+      currentY += 20;
 
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const pageWidth = doc.internal.pageSize.width;
+      const title = 'Apuração de Pontos';
+      const textWidth = doc.getTextWidth(title);
+      const centerX = (pageWidth - textWidth) / 2;
+
+      doc.text(title, centerX, currentY);
+      currentY += 6;
+
+      // Worker info
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Nome: ${worker.Nome || ''}`, margin, currentY);
+      doc.text(`Cargo: ${worker.Cargo || ''}`, margin, currentY + 5);
+      doc.text(`Lotação: ${worker.Lotação || ''}`, margin, currentY + 10);
+      doc.text(`Matrícula: ${worker.Matrícula || ''}`, margin, currentY + 15);
+      doc.text(`CPF: ${worker.CPF || ''}`, margin, currentY + 20);
+
+      currentY += 25;
+      
+      // Days table
       // Prepare day data
-      const dayData = [];
+      const dayData: string[][] = [];
+      let totalMinutes = 0;
+
       for (let day = 1; day <= 31; day++) {
         const entradaKey = `Dia${day}_Entrada`;
         const saidaKey = `Dia${day}_Saida`;
-        const cargaHoraria = worker.CargaHoraria || '-';
+
+        const entrada = worker[entradaKey] || "-";
+        const saida = worker[saidaKey] || "-";
+
+        let carga = "-";
+
+        if (entrada !== "-" && saida !== "-") {
+          try {
+            // parse HH:mm format into minutes
+            const [hIn, mIn] = entrada.split(":").map(Number);
+            const [hOut, mOut] = saida.split(":").map(Number);
+
+            const entradaMin = hIn * 60 + mIn;
+            const saidaMin = hOut * 60 + mOut;
+            const diff = saidaMin - entradaMin;
+
+            if (diff > 0) {
+              const h = Math.floor(diff / 60);
+              const m = diff % 60;
+              carga = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+              totalMinutes += diff;
+            }
+          } catch {
+            carga = "-";
+          }
+        }
 
         dayData.push([
           day.toString(),
-          worker[entradaKey] || '-',
-          worker[saidaKey] || '-',
-          cargaHoraria
+          entrada,
+          saida,
+          carga
         ]);
       }
 
-      // Add days table
-      doc.setFontSize(12);
-      doc.setTextColor(40, 40, 40);
-      doc.text('Registro de Pontos por Dia', margin, currentY);
-      currentY += 8;
+      // Add total row
+      const totalHours = Math.floor(totalMinutes / 60);
+      const totalMins = totalMinutes % 60;
+      const totalCarga = `${totalHours.toString().padStart(2, "0")}:${totalMins.toString().padStart(2, "0")}`;
 
-      autoTable(doc,{
+      dayData.push([
+        "TOTAL (em horas)",
+        "-",
+        "-",
+        totalCarga
+      ]);
+
+      autoTable(doc, {
         startY: currentY,
         head: [['Dia', 'Entrada', 'Saída', 'Carga Horária']],
         body: dayData,
         theme: 'grid',
-        styles: {
-          fontSize: 8,
-          cellPadding: 2,
-          overflow: 'linebreak'
-        },
+        styles: { fontSize: 8, cellPadding: 1, textColor: 0 },
         headStyles: {
           fillColor: [59, 130, 246],
           textColor: 255,
-          fontStyle: 'bold'
+          fontStyle: 'bold',
         },
-        alternateRowStyles: {
-          fillColor: [249, 250, 251]
-        },
-        margin: { horizontal: margin },
-        tableWidth: 'auto'
+        alternateRowStyles: { fillColor: [249, 250, 251] },
+        margin: { left: margin, right: margin },
+        tableWidth: 'auto',
       });
 
-      // Add separator between workers (except last one)
-      if (index < workersData.length - 1) {
-        if (currentY > pageHeight - 20) {
-          doc.addPage();
-          currentY = 15;
-        } else {
-          doc.setDrawColor(200, 200, 200);
-          doc.line(margin, currentY, doc.internal.pageSize.width - margin, currentY);
-          currentY += 20;
-        }
-      }
-    }
+      // Footer with page number
+      const pageCount = doc.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, doc.internal.pageSize.getWidth() - margin - 180, doc.internal.pageSize.getHeight() - 10);
+      doc.text(`Página ${index + 1} de ${pageCount}`, doc.internal.pageSize.getWidth() - margin - 30, doc.internal.pageSize.getHeight() - 10);
+    });
 
-    // Add footer with generation info
+    // Final summary page
     doc.addPage();
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, margin, 20);
+    doc.setTextColor(0, 0, 0);
+    doc.text(
+      `Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`,
+      margin,
+      20
+    );
     doc.text(`Total de funcionários: ${workersData.length}`, margin, 30);
     doc.text(`Período: ${month.charAt(0).toUpperCase() + month.slice(1)}/${year}`, margin, 40);
 
-    // Save PDF
     doc.save(fileName);
-    
     return true;
   } catch (error) {
     console.error('Erro ao exportar detalhes:', error);
